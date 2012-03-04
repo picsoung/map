@@ -103,8 +103,6 @@ var directionsManager;
         	var config = {};
         	var p = points[i];
 
-        	console.log(p);
-
         	if(p.type == "address") {
         		config.address = p.name;
         	} else if(p.type == "location") {
@@ -122,9 +120,6 @@ var directionsManager;
         	var startWaypoint = new Microsoft.Maps.Directions.Waypoint(config);
 
         	var idx = parseInt(p.idx);
-        	console.log(idx);
-        	console.log(startWaypoint.isViapoint());
-
         	directionsManager.addWaypoint(startWaypoint, idx);
         }
 
@@ -249,9 +244,6 @@ var directionsManager;
 	}
 
 	var waypointHandler = function(wp) {
-
-    	console.log("added");
-    	console.log(wp.waypoint);
 
     	Microsoft.Maps.Events.addHandler(wp.waypoint, 'changed', function() {
         	var loc = wp.waypoint.getLocation();
