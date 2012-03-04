@@ -42,8 +42,11 @@
 			pinReceived(snapshot.name(), snapshot.val());
 		});
 
-		waypointsPath.on('child_added', function(snapshot) {
-			console.log(snapshot.val());
+		waypointsPath.on('value', function(snapshot) {
+			//console.log(snapshot.val());
+			snapshot.forEach(function(child){
+				console.log(child.val());
+			});
 		});
 
 		chatPath.on('child_added', function(childSnapshot) {
@@ -144,7 +147,6 @@
 			lat: lat,
 			long: long
 		});
-		
 	}
 
 	var pinReceived = function(id, data) {
@@ -176,6 +178,13 @@
 	var pinMoved = function(id, lat, long) {
 		console.log("Moved");
 		console.log(arguments);
+	}
+
+	var addWaypoint = function(data, index) {
+		waypointsPath.push({
+			name: data,
+			index: index
+		});
 	}
 
 	var apiKey = 1127; 
@@ -351,7 +360,7 @@
 
 		bindUi();
 
-		connectVideo();
+		//connectVideo();
 
 	}
 
