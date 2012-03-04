@@ -160,6 +160,7 @@ var directionsManager;
 			var city = searchCity($("#pinLookup").val(), $("#pinDescription").val());
 			$("#pinLookup").val("");
 			$("#pinDescription").val("");
+			return false;
 		});
 	}
 
