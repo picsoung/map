@@ -5,7 +5,7 @@
 	var hash = document.location.hash.substring(1);
 	var username;
 
-	var pinsPath, chatPath, directionsPath, usersPath;
+	var pinsPath, chatPath, waypointsPath, usersPath;
 
 	var tokbox;
 	var tokboxApiKey = '12571782';
@@ -19,12 +19,12 @@
 
 		var pinsUrl = buildUrl('pins');
 		var chatUrl = buildUrl('chat');
-		var directionsUrl = buildUrl('directions');
+		var waypointsUrl = buildUrl('waypoints');
 		var usersUrl = buildUrl('users');
 
 		pinsPath = new Firebase(pinsUrl);
 		chatPath = new Firebase(chatUrl);
-		directionsPath = new Firebase(directionsUrl);
+		waypointsPath = new Firebase(waypointsUrl);
 		usersPath = new Firebase(usersUrl);
 	}
 
@@ -40,6 +40,10 @@
 
 		pinsPath.on('child_changed', function(snapshot) {
 			pinReceived(snapshot.name(), snapshot.val());
+		});
+
+		waypointsPath.on('child_added', function(snapshot) {
+			console.log(snapshot.val());
 		});
 
 		chatPath.on('child_added', function(childSnapshot) {
