@@ -229,14 +229,26 @@ var directionsManager;
 	}
 
 	var pinReceived = function(id, data) {
-		console.log(id);
-		console.log(data);
 		if(data.lat != 'null' && data.long != 'null') {
 
-			var options = {id: id, 'bounds': true };
+			var options = {
+				id: id,
+				'bounds': true
+			};
 
-			var pin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location(data.lat, data.long), options);
-			map.entities.push(pin);
+			var loc = new Microsoft.Maps.Location(data.lat, data.long);
+			var pin = new Microsoft.Maps.Pushpin(loc, options);   
+			map.entities.push(pin);   
+
+			Microsoft.Maps.Events.addHandler(pin, 'click', function() {
+
+				var defaultInfobox = new Microsoft.Maps.Infobox(loc, {
+					title: "Added by " + data.user,
+					description: '<a href="http://www.hotels.com/search.do?destination=' + data.name + '" target="_blank">Find hotels</a>'
+				}); 
+				map.entities.push(defaultInfobox);
+			}); 
+
 		}                                                                                                                                                                                                                                                                                                                                                                                                                              
 
 	}
