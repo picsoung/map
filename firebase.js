@@ -135,13 +135,15 @@
 			lat: lat,
 			lon: lon
 		});
-		
-		
+
 	}
 
 	var pinReceived = function(id, data) {
 		console.log(id);
 		console.log(data);
+		
+		$('#map_canvas').gmap('addMarker', { /*id:'m_1',*/ 'location': data.lat+','data.long, 'bounds': true } );                                                                                                                                                                                                                
+
 	}
 
 	var removePin = function(id) {
