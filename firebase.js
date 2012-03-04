@@ -89,10 +89,7 @@ var directionsManager;
 	      }
 	      users.sort();
 
-	      $('#users').empty()
-	      for (var i = 0; i < users.length; i++) {
-	        $('#users').append(users[i] + ' is currently ' + presenceData[users[i]] + '<br />');
-	      }
+	      $('#users').text(users.join(", ") + " are online.");
 	    });
 	}
 
