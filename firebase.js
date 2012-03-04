@@ -159,11 +159,11 @@
 		connectTok();
 	}
 
-	connectTok = function() {
+	var connectTok = function() {
 		session.connect(apiKey, token);
 	}
 
-	function disconnect() {
+	var disconnect = function() {
 		session.disconnect();
 		hide('disconnectLink');
 		hide('publishLink');
@@ -171,7 +171,7 @@
 	}
 
 	// Called when user wants to start publishing to the session
-	startPublishing = function() {
+	var startPublishing = function() {
 		if (!publisher) {
 			/*
 			var parentDiv = document.getElementById("myCamera");
@@ -185,7 +185,7 @@
 		}
 	}
 
-	function stopPublishing() {
+	var stopPublishing = function() {
 		if (publisher) {
 			session.unpublish(publisher);
 		}
@@ -203,7 +203,7 @@
 		console.log(arguments);
 	}
 
-	function sessionConnectedHandler(event) {
+	var sessionConnectedHandler = function(event) {
 		// Subscribe to all streams currently in the Session
 		for (var i = 0; i < event.streams.length; i++) {
 			addStream(event.streams[i]);
@@ -215,19 +215,19 @@
 		startPublishing();
 	}
 
-	function streamCreatedHandler(event) {
+	var streamCreatedHandler = function(event) {
 		// Subscribe to the newly created streams
 		for (var i = 0; i < event.streams.length; i++) {
 			addStream(event.streams[i]);
 		}
 	}
 
-	function streamDestroyedHandler(event) {
+	var streamDestroyedHandler = function(event) {
 		// This signals that a stream was destroyed. Any Subscribers will automatically be removed.
 		// This default behaviour can be prevented using event.preventDefault()
 	}
 
-	function sessionDisconnectedHandler(event) {
+	var sessionDisconnectedHandler = function(event) {
 		// This signals that the user was disconnected from the Session. Any subscribers and publishers
 		// will automatically be removed. This default behaviour can be prevented using event.preventDefault()
 		publisher = null;
@@ -238,11 +238,11 @@
 		hide('unpublishLink');
 	}
 
-	function connectionDestroyedHandler(event) {
+	var connectionDestroyedHandler = function(event) {
 		// This signals that connections were destroyed
 	}
 
-	function connectionCreatedHandler(event) {
+	var connectionCreatedHandler = function(event) {
 		// This signals new connections have been created.
 	}
 
@@ -252,7 +252,7 @@
 	If you un-comment the call to TB.setLogLevel(), above, OpenTok automatically displays exception event messages.
 	*/
 	function exceptionHandler(event) {
-		alert("Exception: " + event.code + "::" + event.message);
+		console.log("Exception: " + event.code + "::" + event.message);
 	}
 
 	//--------------------------------------
@@ -266,12 +266,13 @@
 		}
 
 		var div = $("<div/>");
-		div.attr("id", stream.streamId);
-		$("theirVideos").addChild(div);
+		var id = 'idstream.streamId';
+		div.attr("id", id);
+		$("#theirVideos").append(div);
 
 		console.log(stream.streamId);
 
-		subscribers[stream.streamId] = session.subscribe(stream, stream.streamId);
+		subscribers[stream.streamId] = session.subscribe(stream, id);
 	}
 
 	function show(id) {
@@ -304,7 +305,7 @@
 
 		bindUi();
 
-		connectVideo();		
+		connectVideo();
 
 	}
 
