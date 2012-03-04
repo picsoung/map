@@ -1,9 +1,5 @@
 body {
     padding-top: 60px;
     padding-bottom: 40px;
-}
-
-#map {
-	height: 400px;
-	background: #ffffff;
+    background-color: #b6b6b6;
 }
