@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>EasyMapr layout</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap-responsive.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+
+    
+    <script type='text/javascript' src='http://static.firebase.com/v0/firebase.js'></script>
+    <script type='text/javascript' src='http://code.jquery.com/jquery-1.7.1.min.js'></script>
+    <script type='text/javascript' src='firebase.js'></script>
+
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">EasyMapr</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li class="active"><a href="#">Home</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+
+      <div class="row-fluid">
+        <div class="span2">
+          <h2>Add POI</h2>
+           
+
+          <form class="well">
+            <input type="text" class="input-small search-query">
+            <button type="submit" class="btn" id="addPin">Search</button>
+          </form>
+        </div>
+        <div class="span7">
+          <h2>Map</h2>
+          <div id="map">sdf</div>
+       </div>
+        <div class="span3">
+          <h2>Connected users</h2>
+          <div id="users">
+
+          </div>
+
+          <h2>Chat</h2>
+          <div id="messagesDiv">
+
+          </div>
+
+          <form class="well form-search">
+            <input type="text" class="input-medium search-query" id="messageInput">
+            <button type="submit" class="btn" id="messageSend">Submit</button>
+          </form>
+        </div>
+      </div>
+
+      <hr>
+
+      <footer>
+        <p>&copy; EasyMapr 2012</p>
+      </footer>
+
+    </div> <!-- /container -->
+
+
+
+  </body>
+</html>
