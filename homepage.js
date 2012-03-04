@@ -17,6 +17,8 @@
 
 			startMap(map);
 		});
+
+		return false;
 	}
 
 	var startMap = function(map) {
@@ -48,7 +50,7 @@
 
 		connect();
 
-		
+		$("form").submit(startTokbox);
 		$("#start").click(startTokbox);
 
 	}
