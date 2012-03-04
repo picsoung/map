@@ -234,8 +234,7 @@ var directionsManager;
 	var pinReceived = function(id, data) {
 		console.log(id);
 		console.log(data);
-		if(data.lat != 'null' && data.long != 'null'){
-			//$('#map_canvas').gmap('addMarker', { /*id:'m_1',*/ 'location': data.lat+','+data.long, 'bounds': true } ); 
+		if(data.lat != 'null' && data.long != 'null') {
 
 			var options = {id: id, 'bounds': true };
 
