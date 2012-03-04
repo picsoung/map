@@ -78,6 +78,7 @@
 
 		$("#addPin").click(function() {
 			var city = searchCity($("#pinLookup").val());
+			$("#pinLookup").val("");
 		});
 
 		$("#deletePin").click(function() {
