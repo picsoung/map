@@ -3,6 +3,7 @@ var directionsManager;
 (function() {
 
 	var baseUrl = 'http://angelhack.firebase.com/easymapr/';
+	var bingApiKey = 'AlKHLj54K3fKIEgx5aPkf759mo1FC-jxpqhgA199T-8eIr-YbHysBD0W7zaWBCyb';
 	var hash = document.location.hash.substring(1);
 	var username;
 
@@ -181,28 +182,44 @@ var directionsManager;
 		bindUi();
 
 	}
+
+	
 	
 	var searchCity = function (city_name){
-		$('#map_canvas').gmap('search', { 'address': city_name }, function(result, status) {
-		if ( status === 'OK' ) {
-			var city = new Object();
-			var r = result;
-			city.lat = r[0]['resources'][0]['point']['coordinates'][0];
-			city.long = r[0]['resources'][0]['point']['coordinates'][1];
-			city.name = r[0]['resources'][0]['address']['formattedAddress'];
-			city.country = r[0]['resources'][0]['address']['countryRegion'];
-			
-			if (city != false){
-				addPin(Math.random(), city.name, city.lat, city.long);
-			}else{
-				alert("could not find your pin");
+
+		var GEOCODE_URL = 'http://dev.virtualearth.net/REST/v1/Locations/{0}?output=json&jsonp=?&key={1}';
+		var url = GEOCODE_URL.replace('{0}', city_name).replace('{1}', bingApiKey);
+
+
+		var b = function (result, status) {
+			if ( status === 'OK' ) {
+				var city = new Object();
+				var r = result;
+				city.lat = r[0]['resources'][0]['point']['coordinates'][0];
+				city.long = r[0]['resources'][0]['point']['coordinates'][1];
+				city.name = r[0]['resources'][0]['address']['formattedAddress'];
+				city.country = r[0]['resources'][0]['address']['countryRegion'];
+				
+				if (city != false){
+					addPin(Math.random(), city.name, city.lat, city.long);
+				}else{
+					alert("could not find your pin");
+				}
+			} else {
+				return false;
 			}
-		}else{
-			return false;
 		}
 		
-	});
-	
+
+		$.getJSON(url, function(c) {
+	        if ( c.authenticationResultCode === 'ValidCredentials' && c.resourceSets && c.resourceSets.length > 0 && c.resourceSets[0].estimatedTotal > 0 ) {
+	                b(c.resourceSets, 'OK');
+	        } else {
+	                b(null, 'ZERO_RESULTS');
+	        }
+	    }).error( function() { 
+	        b(null, 'ERROR'); 
+	    });
 	}
 
 	var addPin = function(user, name, lat, long) {
@@ -218,7 +235,12 @@ var directionsManager;
 		console.log(id);
 		console.log(data);
 		if(data.lat != 'null' && data.long != 'null'){
-			$('#map_canvas').gmap('addMarker', { /*id:'m_1',*/ 'location': data.lat+','+data.long, 'bounds': true } ); 
+			//$('#map_canvas').gmap('addMarker', { /*id:'m_1',*/ 'location': data.lat+','+data.long, 'bounds': true } ); 
+
+			var options = {id: id, 'bounds': true };
+
+			var pin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location(data.lat, data.long), options);
+			map.entities.push(pin);
 		}                                                                                                                                                                                                                                                                                                                                                                                                                              
 
 	}
@@ -444,7 +466,7 @@ var directionsManager;
 
 	var createMap = function() {
 
-		map = new Microsoft.Maps.Map(document.getElementById("map_canvas"),{credentials:'AlKHLj54K3fKIEgx5aPkf759mo1FC-jxpqhgA199T-8eIr-YbHysBD0W7zaWBCyb'});
+		map = new Microsoft.Maps.Map(document.getElementById("map_canvas"),{credentials:bingApiKey});
 		Microsoft.Maps.loadModule('Microsoft.Maps.Directions', { callback: directionsModuleLoaded });
 	}
 
