@@ -143,7 +143,7 @@ var directionsManager;
         		waypoint: startWaypoint
         	};
 
-        	//waypointHandler(x);
+        	waypointHandler(x);
         }
 
 
