@@ -143,8 +143,9 @@ var directionsManager;
 		});
 
 		$("#addPinForm").submit(function() {
-			var city = searchCity($("#pinLookup").val());
+			var city = searchCity($("#pinLookup").val(), $("#pinDescription").val());
 			$("#pinLookup").val("");
+			$("#pinDescription").val("");
 		});
 	}
 
@@ -175,7 +176,7 @@ var directionsManager;
 
 	
 	
-	var searchCity = function (city_name){
+	var searchCity = function (city_name, description){
 
 		var GEOCODE_URL = 'http://dev.virtualearth.net/REST/v1/Locations/{0}?output=json&jsonp=?&key={1}';
 		var url = GEOCODE_URL.replace('{0}', city_name).replace('{1}', bingApiKey);
@@ -191,7 +192,7 @@ var directionsManager;
 				city.country = r[0]['resources'][0]['address']['countryRegion'];
 				
 				if (city != false){
-					addPin(Math.random(), city.name, city.lat, city.long);
+					addPin(username, city.name, description, city.lat, city.long);
 				}else{
 					alert("could not find your pin");
 				}
@@ -212,10 +213,11 @@ var directionsManager;
 	    });
 	}
 
-	var addPin = function(user, name, lat, long) {
+	var addPin = function(user, name, description, lat, long) {
 		pinsPath.push({
 			user: username,
 			name: name,
+			description: description,
 			lat: lat,
 			long: long
 		});
@@ -236,8 +238,9 @@ var directionsManager;
 			Microsoft.Maps.Events.addHandler(pin, 'click', function() {
 
 				var defaultInfobox = new Microsoft.Maps.Infobox(loc, {
-					title: "Added by " + data.user,
-					description: '<a href="http://www.hotels.com/search.do?destination=' + data.name + '" target="_blank">Find hotels</a>'
+					title: data.name + " added by " + data.user,
+					description: data.description + "<br/>" + 
+					'<a href="http://www.hotels.com/search.do?destination=' + data.name + '" target="_blank">Find hotels</a>'
 				}); 
 				map.entities.push(defaultInfobox);
 				return false;
