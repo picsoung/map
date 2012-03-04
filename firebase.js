@@ -59,16 +59,22 @@ var directionsManager;
 		waypointsPath.on('value', function(snapshot) {
 
 			if(myUpdate) {
+
+				console.log("waypoints value false");
+
 				myUpdate = false;
 				return;
 			}
-			
+
+			console.log("waypoints value true");
+
 			points = new Array();
 			names = new Array();
 
 			thePoints = {};
 
-			snapshot.forEach(function(child){
+			snapshot.forEach(function(child) {
+				console.log(child.val());
 				points.push(child.val());
 				names.push(child.name());
 			});
@@ -139,7 +145,7 @@ var directionsManager;
         		waypoint: startWaypoint
         	};
 
-        	waypointHandler(x);
+        	//waypointHandler(x);
         }
 
 
@@ -150,10 +156,53 @@ var directionsManager;
         directionsManager.calculateDirections();
 	}
 
+
+	var addWaypoint = function(id, data) {
+		myUpdate = true;
+		var i = waypointsPath.push(data);
+		thePoints[id] = i.name();
+	}
+
+	var waypointHandler = function(wp) {
+
+    	Microsoft.Maps.Events.addHandler(wp.waypoint, 'changed', function() {
+
+        	var loc = wp.waypoint.getLocation();
+        	var waypoint = {};
+        	waypoint.type = "location";
+        	waypoint.lat = loc.latitude;
+        	waypoint.long = loc.longitude;
+        	waypoint.idx = loc.longitude;
+
+        	console.log(wp.waypoint);
+
+        	var wps = directionsManager.getAllWaypoints();
+
+        	console.log("Changed");
+
+        	
+        	for(var i in wps) {
+        		if(wp.waypoint == wps[i]) {
+        			waypoint.idx = i;
+        			if(thePoints[wp.waypoint._uniqueId] !== undefined) {
+		        		myUpdate = true;
+		        		waypointsPath.child(thePoints[wp.waypoint._uniqueId]).set(waypoint);
+		        	} else {
+		        		addWaypoint(wp.waypoint._uniqueId, waypoint);
+		        	}
+		        	break;
+        		}
+	        }
+        	
+
+    	});
+    }
+
 	var bindUi = function() {
 
 		$("#messageSend").click(function() {
 			sendMessage();
+			return false;
 		});
 
 		$("#addPinForm").submit(function() {
@@ -208,7 +257,7 @@ var directionsManager;
 				
 				if (city != false){
 					addPin(username, city.name, description, city.lat, city.long);
-				}else{
+				} else {
 					alert("could not find your pin");
 				}
 			} else {
@@ -286,51 +335,6 @@ var directionsManager;
 		console.log("Moved");
 		console.log(arguments);
 	}
-
-	var addWaypoint = function(id, data) {
-		myUpdate = true;
-		var i = waypointsPath.push(data);
-		thePoints[id] = i.name();
-	}
-
-	var waypointHandler = function(wp) {
-
-    	Microsoft.Maps.Events.addHandler(wp.waypoint, 'changed', function() {
-
-        	var loc = wp.waypoint.getLocation();
-        	var waypoint = {};
-        	waypoint.type = "location";
-        	waypoint.lat = loc.latitude;
-        	waypoint.long = loc.longitude;
-
-        	var wps = directionsManager.getAllWaypoints();
-
-        	console.log(wp.waypoint);
-        	console.log("Exists: " + (thePoints[wp.waypoint._uniqueId] ? "yes" : "no"));
-
-        	if(thePoints[wp.waypoint._uniqueId] !== undefined) {
-        		myUpdate = true;
-        		waypointsPath.child(thePoints[wp.waypoint._uniqueId]).set(waypoint);
-        	} else {
-	        	for(var i in wps) {
-
-	        		console.log(wps[i]);
-
-	        		if(wp.waypoint == wps[i]) {
-	        			console.log("Similar " + i);
-
-	        			waypoint.idx = i;
-
-			        	addWaypoint(wp.waypoint._uniqueId, waypoint);
-	        		} else {
-	        			console.log("Different");
-	        		}
-	        	}
-	        }
-        	
-
-    	});
-    }
 
 	var apiKey = 1127; 
 	var sessionId = '153975e9d3ecce1d11baddd2c9d8d3c9d147df18';
@@ -515,6 +519,8 @@ var directionsManager;
      }
 
 	var boot = function() {
+
+		//Firebase.enableLogging(true);
 
 		createMap();
 
