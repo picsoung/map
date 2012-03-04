@@ -6,7 +6,7 @@ var directionsManager;
 	var hash = document.location.hash.substring(1);
 	var username;
 
-	var pinsPath, chatPath, waypointsPath, usersPath;
+	var pinsPath, chatPath, waypointsPath, usersPath, videoPath;
 
 	var tokbox;
 	var tokboxApiKey = '12571782';
@@ -22,11 +22,13 @@ var directionsManager;
 		var chatUrl = buildUrl('chat');
 		var waypointsUrl = buildUrl('waypoints');
 		var usersUrl = buildUrl('users');
+		var videoUrl = buildUrl('video');
 
 		pinsPath = new Firebase(pinsUrl);
 		chatPath = new Firebase(chatUrl);
 		waypointsPath = new Firebase(waypointsUrl);
 		usersPath = new Firebase(usersUrl);
+		videoPath = new Firebase(videoUrl);
 	}
 
 
@@ -35,6 +37,11 @@ var directionsManager;
 	var myUpdate = false;
 
 	var bindListeners = function() {
+
+		videoPath.on('value', function(snapshot) {
+			sessionId = snapshot.val();
+			connectVideo();
+		});
 
 		pinsPath.on('child_added', function(snapshot) {
 			pinReceived(snapshot.name(), snapshot.val());
@@ -283,6 +290,9 @@ var directionsManager;
 	var subscribers = {};
 
 	var connectVideo = function() {
+
+
+
 		TB.addEventListener('exception', exceptionHandler);
 
 		if (TB.checkSystemRequirements() != TB.HAS_REQUIREMENTS) {
@@ -468,8 +478,6 @@ var directionsManager;
 		user.removeOnDisconnect();
 
 		bindUi();
-
-		//connectVideo();
 
 	}
 
