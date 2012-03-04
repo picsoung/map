@@ -30,10 +30,11 @@
 	var bindListeners = function() {
 
 		pinsPath.on('child_added', function(snapshot) {
+			pinReceived(snapshot.name(), snapshot.val());
+		});
 
-			console.log(snapshot.val());
-			console.log(snapshot.name());
-
+		pinsPath.on('child_removed', function(snapshot) {
+			pinReceived(snapshot.name(), snapshot.val());
 		});
 
 		chatPath.on('child_added', function(childSnapshot) {
@@ -68,6 +69,13 @@
 
 		$("#addPin").click(function() {
 			addPin(Math.random(), Math.random(), Math.random(), Math.random());
+		});
+
+		$("#deletePin").click(function() {
+			var id = $("#pinLookup").val();
+
+			removePin(id);
+
 		});
 	}
 
@@ -105,7 +113,19 @@
 			lat: lat,
 			lon: lon
 		});
+	}
 
+	var pinReceived = function(id, data) {
+		console.log(id);
+		console.log(data);
+	}
+
+	var removePin = function(id) {
+		pinsPath.child(id).remove();
+	}
+
+	var pinRemoved = function(id) {
+		console.log("Pin removed: " + id);
 	}
 
 
