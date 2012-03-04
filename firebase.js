@@ -30,12 +30,10 @@
 	var bindListeners = function() {
 
 		pinsPath.on('child_added', function(snapshot) {
-			/*
-			snapshot.forEach(function(child) {
-				console.log(child.val());
-				console.log(child.name());
-			});
-*/
+
+			console.log(snapshot.val());
+			console.log(snapshot.name());
+
 		});
 
 		chatPath.on('child_added', function(childSnapshot) {
