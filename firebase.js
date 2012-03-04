@@ -1,4 +1,5 @@
 
+var directionsManager;
 (function() {
 
 	var baseUrl = 'http://angelhack.firebase.com/easymapr/';
@@ -30,8 +31,8 @@
 
 
 	var map = null;
-	var directionsManager;
 	var points;
+	var myUpdate = false;
 
 	var bindListeners = function() {
 
@@ -48,6 +49,11 @@
 		});
 
 		waypointsPath.on('value', function(snapshot) {
+
+			if(myUpdate) {
+				myUpdate = false;
+				return;
+			}
 			
 			points = new Array();
 
@@ -55,10 +61,7 @@
 				points.push(child.val());
 			});
 
-			if(map == null) {
-				map = new Microsoft.Maps.Map(document.getElementById("map_canvas"),{credentials:'AlKHLj54K3fKIEgx5aPkf759mo1FC-jxpqhgA199T-8eIr-YbHysBD0W7zaWBCyb'});
-				Microsoft.Maps.loadModule('Microsoft.Maps.Directions', { callback: directionsModuleLoaded });
-			}
+			showPoints(points);
 		});
 
 		chatPath.on('child_added', function(childSnapshot) {
@@ -85,65 +88,53 @@
 	    });
 	}
 
-	function directionsModuleLoaded()
-         {
-            // Initialize the DirectionsManager
-            directionsManager = new Microsoft.Maps.Directions.DirectionsManager(map);
+	var handlerId;
 
-            for(var i in points) {
+	var showPoints = function(points) {
 
-            	var config = {};
-            	var p = points[i];
+		directionsManager.resetDirections();
 
-            	if(p.type == "address") {
-            		config.address = p.name;
-            	} else if(p.type == "location") {
-            		var loc = new Microsoft.Maps.Location(p.lat, p.long);
-            		config.location = loc;
-            	} else {
-            		console.log("Waypoint error");
-            		console.log(p);
-            	}
+		if(handlerId) {
+			Microsoft.Maps.Events.removeHandler(handlerId);
+		}
 
-            	if(i != 0 && i != points.length - 1) {
-            		config.isViapoint = true;
-            	}
+		for(var i in points) {
 
-            	var startWaypoint = new Microsoft.Maps.Directions.Waypoint(config);
+        	var config = {};
+        	var p = points[i];
 
-            	directionsManager.addWaypoint(startWaypoint);
-            }
+        	console.log(p);
 
-            // Set the id of the div to use to display the directions
-            directionsManager.setRenderOptions({ itineraryContainer: document.getElementById('panel') });
+        	if(p.type == "address") {
+        		config.address = p.name;
+        	} else if(p.type == "location") {
+        		var loc = new Microsoft.Maps.Location(p.lat, p.long);
+        		config.location = loc;
+        	} else {
+        		console.log("Waypoint error");
+        		console.log(p);
+        	}
 
-            // Specify a handler for when an error occurs
-            Microsoft.Maps.Events.addHandler(directionsManager, 'directionsError', function() {
-            	console.log(arguments);
-            });
+        	// if(i != 0 && i != points.length - 1) {
+        	// 	config.isViapoint = true;
+        	// }
 
-            Microsoft.Maps.Events.addHandler(directionsManager, 'waypointAdded', function(wp) {
+        	var startWaypoint = new Microsoft.Maps.Directions.Waypoint(config);
 
-            	console.log("added");
-            	console.log(wp.waypoint);
+        	var idx = parseInt(p.idx);
+        	console.log(idx);
+        	console.log(startWaypoint.isViapoint());
 
-            	Microsoft.Maps.Events.addHandler(wp.waypoint, 'changed', function() {
-            		console.log(arguments);
+        	directionsManager.addWaypoint(startWaypoint, idx);
+        }
 
-	            	var loc = wp.waypoint.getLocation();
-	            	var waypoint = {};
-	            	waypoint.type = "location";
-	            	waypoint.lat = loc.latitude;
-	            	waypoint.long = loc.longitude;
 
-	            	addWaypoint(waypoint);
-            	});
-            });
 
-            // Calculate directions, which displays a route on the map
-            directionsManager.calculateDirections();
+	    handlerId = Microsoft.Maps.Events.addHandler(directionsManager, 'waypointAdded', waypointHandler);
 
-         }
+        // Calculate directions, which displays a route on the map
+        directionsManager.calculateDirections();
+	}
 
 	var bindUi = function() {
 
@@ -253,8 +244,43 @@
 	}
 
 	var addWaypoint = function(data) {
+		myUpdate = true;
 		waypointsPath.push(data);
 	}
+
+	var waypointHandler = function(wp) {
+
+    	console.log("added");
+    	console.log(wp.waypoint);
+
+    	Microsoft.Maps.Events.addHandler(wp.waypoint, 'changed', function() {
+        	var loc = wp.waypoint.getLocation();
+        	var waypoint = {};
+        	waypoint.type = "location";
+        	waypoint.lat = loc.latitude;
+        	waypoint.long = loc.longitude;
+
+        	var wps = directionsManager.getAllWaypoints();
+
+        	console.log(wp.waypoint);
+
+        	for(var i in wps) {
+
+        		console.log(wps[i]);
+
+        		if(wp.waypoint == wps[i]) {
+        			console.log("Similar " + i);
+
+        			waypoint.idx = i;
+
+		        	addWaypoint(waypoint);
+        		} else {
+        			console.log("Different");
+        		}
+        	}
+
+    	});
+    }
 
 	var apiKey = 1127; 
 	var sessionId = '153975e9d3ecce1d11baddd2c9d8d3c9d147df18';
@@ -414,8 +440,30 @@
 		}
 	}
 
+	var createMap = function() {
+
+		map = new Microsoft.Maps.Map(document.getElementById("map_canvas"),{credentials:'AlKHLj54K3fKIEgx5aPkf759mo1FC-jxpqhgA199T-8eIr-YbHysBD0W7zaWBCyb'});
+		Microsoft.Maps.loadModule('Microsoft.Maps.Directions', { callback: directionsModuleLoaded });
+	}
+
+
+	var directionsModuleLoaded = function() {
+
+        directionsManager = new Microsoft.Maps.Directions.DirectionsManager(map);
+
+	    // Set the id of the div to use to display the directions
+	    directionsManager.setRenderOptions({ itineraryContainer: document.getElementById('panel') });
+
+	    // Specify a handler for when an error occurs
+	    Microsoft.Maps.Events.addHandler(directionsManager, 'directionsError', function() {
+	    	console.log(arguments);
+	    });
+
+     }
 
 	var boot = function() {
+
+		createMap();
 
 		connect();
 

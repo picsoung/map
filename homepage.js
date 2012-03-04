@@ -16,11 +16,13 @@
 		var waypointsPath = map.child("waypoints");
 		waypointsPath.push().set({
 			type: "address",
-			name: from
+			name: from,
+			idx: 0
 		});
 		waypointsPath.push().set({
 			type: "address",
-			name: to
+			name: to,
+			idx: 1
 		});
 
 		console.log(map.name());
