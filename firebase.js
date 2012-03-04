@@ -132,21 +132,22 @@
 	
 	}
 	
-	var addPin = function(user, name, lat, lon) {
+	var addPin = function(user, name, lat, long) {
 		pinsPath.push({
 			user: username,
 			name: name,
 			lat: lat,
-			lon: lon
+			long: long
 		});
-
+		
 	}
 
 	var pinReceived = function(id, data) {
 		console.log(id);
 		console.log(data);
-		
-		$('#map_canvas').gmap('addMarker', { /*id:'m_1',*/ 'location': data.lat+','data.long, 'bounds': true } );                                                                                                                                                                                                                
+		if(data.lat != 'null' && data.long != 'null'){
+			$('#map_canvas').gmap('addMarker', { /*id:'m_1',*/ 'location': data.lat+','+data.long, 'bounds': true } ); 
+		}                                                                                                                                                                                                                                                                                                                                                                                                                              
 
 	}
 
@@ -309,7 +310,7 @@
 
 		var div = $("<div/>");
 		div.attr("id", stream.streamId);
-		$("theirVideos").addChild(div);
+		$("theirVideos").append(div);
 
 		console.log(stream.streamId);
 
