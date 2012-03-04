@@ -130,9 +130,7 @@ var directionsManager;
         		console.log(p);
         	}
 
-        	// if(i != 0 && i != points.length - 1) {
-        	// 	config.isViapoint = true;
-        	// }
+        	config.isViapoint = !p.endpoint;
 
         	var startWaypoint = new Microsoft.Maps.Directions.Waypoint(config);
 
@@ -173,6 +171,7 @@ var directionsManager;
         	waypoint.lat = loc.latitude;
         	waypoint.long = loc.longitude;
         	waypoint.idx = loc.longitude;
+        	waypoint.endpoint = !wp.waypoint.isViapoint();
 
         	console.log(wp.waypoint);
 
