@@ -16,6 +16,10 @@
     <script type='text/javascript' src='http://static.firebase.com/v0/firebase.js'></script>
     <script type='text/javascript' src='http://code.jquery.com/jquery-1.7.1.min.js'></script>
     <script type='text/javascript' src='firebase.js'></script>
+    <script src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0" type="text/javascript"></script>
+    <script src="./js/jquery.ui.map.full.min.js" type="text/javascript"></script>
+    <script src="http://jquery-bing-maps.googlecode.com/svn/trunk/js/min/jquery.ui.bmap.min.js" type='text/javascript'></script>
+    <script src="http://jquery-bing-maps.googlecode.com/svn/trunk/js/min/jquery.ui.bmap.services.min.js" type='text/javascript'></script>
 
   </head>
 
@@ -55,7 +59,17 @@
         </div>
         <div class="span7">
           <h2>Map</h2>
-          <div id="map">sdf</div>
+          <div id="map">
+          		<form id="from_to_form" class="well" onsubmit="return draw_trip();">
+					  <label>From</label>
+					  <input type="text" class="span3" placeholder="Type something" id="from">
+					  <label>TO</label>
+					  <input type="text" class="span3" placeholder="Type something" id="to">
+					   <input type="submit" class="btn" />
+				  </form>
+				   <div id="map_canvas" style="width:500px;height:500px;position:relative;"></div>
+			
+  			</div>          
        </div>
         <div class="span3">
           <h2>Connected users</h2>
@@ -87,3 +101,17 @@
 
   </body>
 </html>
+
+<script type="text/javascript">
+$(function() {
+var yourStartLatLng = '59.3426606750, 18.0736160278';
+        $('#map_canvas').gmap({'credentials': 'AlKHLj54K3fKIEgx5aPkf759mo1FC-jxpqhgA199T-8eIr-YbHysBD0W7zaWBCyb', 'center': yourStartLatLng});                                                                                                                                                                                                               
+
+});
+
+function draw_trip(){
+	$('#map_canvas').gmap('displayDirections', { 'origin': $("#from").val(), 'destination': $("#to").val(), 'routeMode': 'driving' }, { 'panel': document.getElementById('panel') } );
+	return false;
+}
+</script>
+
