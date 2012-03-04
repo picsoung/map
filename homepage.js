@@ -14,8 +14,14 @@
 		var map = path.push();
 
 		var waypointsPath = map.child("waypoints");
-		waypointsPath.push().set(from);
-		waypointsPath.push().set(to);
+		waypointsPath.push().set({
+			type: "address",
+			name: from
+		});
+		waypointsPath.push().set({
+			type: "address",
+			name: to
+		});
 
 		console.log(map.name());
 
