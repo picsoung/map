@@ -142,16 +142,9 @@ var directionsManager;
 			sendMessage();
 		});
 
-		$("#addPin").click(function() {
+		$("#addPinForm").submit(function() {
 			var city = searchCity($("#pinLookup").val());
 			$("#pinLookup").val("");
-		});
-
-		$("#deletePin").click(function() {
-			var id = $("#pinLookup").val();
-
-			removePin(id);
-
 		});
 	}
 
