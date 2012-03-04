@@ -247,6 +247,7 @@ var directionsManager;
 					description: '<a href="http://www.hotels.com/search.do?destination=' + data.name + '" target="_blank">Find hotels</a>'
 				}); 
 				map.entities.push(defaultInfobox);
+				return false;
 			}); 
 
 		}                                                                                                                                                                                                                                                                                                                                                                                                                              

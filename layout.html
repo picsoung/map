@@ -102,28 +102,3 @@
   </body>
 </html>
 
-<script type="text/javascript">
-$(function() {
-  /*
-var yourStartLatLng = '59.3426606750, 18.0736160278';
-        $('#map_canvas').gmap({'credentials': 'AlKHLj54K3fKIEgx5aPkf759mo1FC-jxpqhgA199T-8eIr-YbHysBD0W7zaWBCyb', 'center': yourStartLatLng});                                                                                                                                                                                                               
-
-$('#map_canvas').gmap().bind('init', function() {
-        $('#map_canvas').gmap('search', { 'address': 'New York' }, function(results, status) {
-                if ( status === 'OK' ) {
-                		//console.log(results);
-                        //var location = new Microsoft.Maps.Location(item.point.coordinates[0],item.point.coordinates[1]);
-                        //$('#map_canvas').gmap('get', 'map').setView({'center':location});
-                }
-        });
-});
-*/
-
-});
-
-function draw_trip(){
-	$('#map_canvas').gmap('displayDirections', { 'origin': $("#from").val(), 'destination': $("#to").val(), 'routeMode': 'driving' }, { 'panel': document.getElementById('panel') } );
-	return false;
-}
-</script>
-
