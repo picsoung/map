@@ -62,14 +62,23 @@ var directionsManager;
 				myUpdate = false;
 				return;
 			}
+
+			if(handlerId) {
+				Microsoft.Maps.Events.removeHandler(handlerId);
+			}
 			
-			points = new Array();
+			directionsManager.resetDirections();
+
+			thePoints = {};
 
 			snapshot.forEach(function(child){
-				points.push(child.val());
+				addMoveWaypoint(child.name(), child.val());
 			});
 
-			showPoints(points);
+	        directionsManager.calculateDirections();
+
+		    handlerId = Microsoft.Maps.Events.addHandler(directionsManager, 'waypointAdded', waypointHandler);
+	
 		});
 
 		chatPath.on('child_added', function(childSnapshot) {
@@ -97,6 +106,50 @@ var directionsManager;
 	}
 
 	var handlerId;
+
+	var thePoints = {};
+	var addMoveWaypoint = function(id, data) {
+
+		var loc = getConfig(data);
+
+		if(thePoints[id]) {
+			var point = thePoints[id];
+			point.setOptions({
+				location: loc
+			});
+		} else {
+        	var p = data;
+
+        	var config = getConfig(p);
+
+        	// if(i != 0 && i != points.length - 1) {
+        	// 	config.isViapoint = true;
+        	// }
+
+        	var startWaypoint = new Microsoft.Maps.Directions.Waypoint(config);
+
+        	var idx = parseInt(p.idx);
+        	directionsManager.addWaypoint(startWaypoint, idx);
+
+        	thePoints[id] = startWaypoint;
+		}
+	}
+
+	var getConfig = function(p) {
+			var config = {};
+
+		if(p.type == "address") {
+        		config.address = p.name;
+        	} else if(p.type == "location") {
+        		var loc = new Microsoft.Maps.Location(p.lat, p.long);
+        		config.location = loc;
+        	} else {
+        		console.log("Waypoint error");
+        		console.log(p);
+        	}
+
+        	return config;
+	}
 
 	var showPoints = function(points) {
 
