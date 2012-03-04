@@ -37,6 +37,10 @@
 			pinReceived(snapshot.name(), snapshot.val());
 		});
 
+		pinsPath.on('child_changed', function(snapshot) {
+			pinReceived(snapshot.name(), snapshot.val());
+		});
+
 		chatPath.on('child_added', function(childSnapshot) {
 
 		  var message = childSnapshot.val();
@@ -126,6 +130,20 @@
 
 	var pinRemoved = function(id) {
 		console.log("Pin removed: " + id);
+	}
+
+	var movePin = function(id, lat, long) {
+		var pin = pinsPath.child(id);
+
+		pin.set({
+			lat: lat,
+			long: long
+		});
+	}
+
+	var pinMoved = function(id, lat, long) {
+		console.log("Moved");
+		console.log(arguments);
 	}
 
 
