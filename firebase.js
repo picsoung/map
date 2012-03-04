@@ -7,7 +7,8 @@
 
 	var pinsPath, chatPath, directionsPath, usersPath;
 
-	var currentPinNumber = 0;
+	var tokbox;
+	var tokboxApiKey = '12571782';
 
 
 	var buildUrl = function(name) {
@@ -92,23 +93,6 @@
 		$("#messageInput").focus();
 	}
 
-
-	var boot = function() {
-
-		connect();
-
-		bindListeners();
-
-		// username = prompt("Username");
-		username = Math.round(Math.random() * 1000)	;
-		var user = usersPath.child(username);
-		user.set(true);
-		user.removeOnDisconnect();
-
-		bindUi();
-
-	}
-
 	var addPin = function(user, name, lat, lon) {
 
 		pinsPath.push({
@@ -146,6 +130,183 @@
 		console.log(arguments);
 	}
 
+	var apiKey = 1127; 
+	var sessionId = '153975e9d3ecce1d11baddd2c9d8d3c9d147df18';
+	var token = 'devtoken'; 
+
+	var session;
+	var publisher;
+	var subscribers = {};
+
+	var connectVideo = function() {
+		TB.addEventListener('exception', exceptionHandler);
+
+		if (TB.checkSystemRequirements() != TB.HAS_REQUIREMENTS) {
+			alert("You don't have the minimum requirements to run this application."
+				  + "Please upgrade to the latest version of Flash.");
+		} else {
+			session = TB.initSession(sessionId);	// Initialize session
+
+			// Add event listeners to the session
+			session.addEventListener('sessionConnected', sessionConnectedHandler);
+			session.addEventListener('sessionDisconnected', sessionDisconnectedHandler);
+			session.addEventListener('connectionCreated', connectionCreatedHandler);
+			session.addEventListener('connectionDestroyed', connectionDestroyedHandler);
+			session.addEventListener('streamCreated', streamCreatedHandler);
+			session.addEventListener('streamDestroyed', streamDestroyedHandler);
+		}
+
+		connectTok();
+	}
+
+	connectTok = function() {
+		session.connect(apiKey, token);
+	}
+
+	function disconnect() {
+		session.disconnect();
+		hide('disconnectLink');
+		hide('publishLink');
+		hide('unpublishLink');
+	}
+
+	// Called when user wants to start publishing to the session
+	startPublishing = function() {
+		if (!publisher) {
+			/*
+			var parentDiv = document.getElementById("myCamera");
+			var publisherDiv = document.createElement('div'); // Create a div for the publisher to replace
+			publisherDiv.setAttribute('id', 'opentok_publisher');
+			parentDiv.appendChild(publisherDiv);
+			*/
+			publisher = session.publish("myVideo"); // Pass the replacement div id to the publish method
+			show('unpublishLink');
+			hide('publishLink');
+		}
+	}
+
+	function stopPublishing() {
+		if (publisher) {
+			session.unpublish(publisher);
+		}
+		publisher = null;
+
+		show('publishLink');
+		hide('unpublishLink');
+	}
+
+	//--------------------------------------
+	//  OPENTOK EVENT HANDLERS
+	//--------------------------------------
+
+	var exceptionHandler = function() {
+		console.log(arguments);
+	}
+
+	function sessionConnectedHandler(event) {
+		// Subscribe to all streams currently in the Session
+		for (var i = 0; i < event.streams.length; i++) {
+			addStream(event.streams[i]);
+		}
+		show('disconnectLink');
+		show('publishLink');
+		hide('connectLink');
+
+		startPublishing();
+	}
+
+	function streamCreatedHandler(event) {
+		// Subscribe to the newly created streams
+		for (var i = 0; i < event.streams.length; i++) {
+			addStream(event.streams[i]);
+		}
+	}
+
+	function streamDestroyedHandler(event) {
+		// This signals that a stream was destroyed. Any Subscribers will automatically be removed.
+		// This default behaviour can be prevented using event.preventDefault()
+	}
+
+	function sessionDisconnectedHandler(event) {
+		// This signals that the user was disconnected from the Session. Any subscribers and publishers
+		// will automatically be removed. This default behaviour can be prevented using event.preventDefault()
+		publisher = null;
+
+		show('connectLink');
+		hide('disconnectLink');
+		hide('publishLink');
+		hide('unpublishLink');
+	}
+
+	function connectionDestroyedHandler(event) {
+		// This signals that connections were destroyed
+	}
+
+	function connectionCreatedHandler(event) {
+		// This signals new connections have been created.
+	}
+
+	/*
+	If you un-comment the call to TB.addEventListener("exception", exceptionHandler) above, OpenTok calls the
+	exceptionHandler() method when exception events occur. You can modify this method to further process exception events.
+	If you un-comment the call to TB.setLogLevel(), above, OpenTok automatically displays exception event messages.
+	*/
+	function exceptionHandler(event) {
+		alert("Exception: " + event.code + "::" + event.message);
+	}
+
+	//--------------------------------------
+	//  HELPER METHODS
+	//--------------------------------------
+
+	function addStream(stream) {
+		// Check if this is the stream that I am publishing, and if so do not publish.
+		if (stream.connection.connectionId == session.connection.connectionId) {
+			return;
+		}
+
+		var div = $("<div/>");
+		div.attr("id", stream.streamId);
+		$("theirVideos").addChild(div);
+
+		console.log(stream.streamId);
+
+		subscribers[stream.streamId] = session.subscribe(stream, stream.streamId);
+	}
+
+	function show(id) {
+		console.log("Show: " + id);
+	}
+
+	function hide(id) {
+		console.log("Hide: " + id);
+	}
+
+
+	var consoler = function(text) {
+		return function() {
+			console.log(text);
+		}
+	}
+
+
+	var boot = function() {
+
+		connect();
+
+		bindListeners();
+
+		// username = prompt("Username");
+		username = Math.round(Math.random() * 1000)	;
+		var user = usersPath.child(username);
+		user.set(true);
+		user.removeOnDisconnect();
+
+		bindUi();
+
+		connectVideo();		
+
+	}
 
 	$(document).ready(boot);
 
