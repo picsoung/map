@@ -54,8 +54,11 @@
            
 
           <form class="well form-vertical" id="addPinForm">
+            <label for="pinLookup">Location</label>
             <input type="text" class="input-medium search-query" id="pinLookup">
-            <textarea class="input-medium" id="pinDescription" rows="2"></textarea>
+
+            <label for="pinDescription">Why go there?</label>
+            <textarea class="input-medium" id="pinDescription" rows="4"></textarea>
             <button type="submit" class="btn" id="addPin">Search</button>
           </form>
 
@@ -87,7 +90,7 @@
           </div>
 
           <form class="well form-search">
-            <input type="text" class="input-medium search-query" id="messageInput">
+            <input type="text" class="input-medium search-query" id="messageInput" autocomplete='off'>
             <button type="submit" class="btn" id="messageSend">Submit</button>
           </form>
         </div>

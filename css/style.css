@@ -3,3 +3,7 @@ body {
     padding-bottom: 40px;
     background-color: #b6b6b6;
 }
+
+#addPinForm input {
+	width: 135px;
+} 

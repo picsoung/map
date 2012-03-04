@@ -99,7 +99,7 @@ var directionsManager;
 	      }
 	      users.sort();
 
-	      $('#users').text(users.join(", ") + " are online.");
+	      $('#users').text("User(s) online: " + users.join(", ") + ".");
 	    });
 	}
 
@@ -227,8 +227,8 @@ var directionsManager;
 
 		bindListeners();
 
-		// username = prompt("Username");
-		username = Math.round(Math.random() * 1000)	;
+		username = prompt("Username");
+		// username = Math.round(Math.random() * 1000)	;
 		var user = usersPath.child(username);
 		user.set(true);
 		user.removeOnDisconnect();
