@@ -64,12 +64,16 @@ var directionsManager;
 			}
 			
 			points = new Array();
+			names = new Array();
+
+			thePoints = {};
 
 			snapshot.forEach(function(child){
 				points.push(child.val());
+				names.push(child.name());
 			});
 
-			showPoints(points);
+			showPoints(points, names);
 		});
 
 		chatPath.on('child_added', function(childSnapshot) {
@@ -95,7 +99,9 @@ var directionsManager;
 
 	var handlerId;
 
-	var showPoints = function(points) {
+	var thePoints = {};
+
+	var showPoints = function(points, names) {
 
 		directionsManager.resetDirections();
 
@@ -126,6 +132,14 @@ var directionsManager;
 
         	var idx = parseInt(p.idx);
         	directionsManager.addWaypoint(startWaypoint, idx);
+
+        	thePoints[startWaypoint._uniqueId] = names[i];
+
+        	var x = {
+        		waypoint: startWaypoint
+        	};
+
+        	waypointHandler(x);
         }
 
 
@@ -272,14 +286,16 @@ var directionsManager;
 		console.log(arguments);
 	}
 
-	var addWaypoint = function(data) {
+	var addWaypoint = function(id, data) {
 		myUpdate = true;
-		waypointsPath.push(data);
+		var i = waypointsPath.push(data);
+		thePoints[id] = i.name();
 	}
 
 	var waypointHandler = function(wp) {
 
     	Microsoft.Maps.Events.addHandler(wp.waypoint, 'changed', function() {
+
         	var loc = wp.waypoint.getLocation();
         	var waypoint = {};
         	waypoint.type = "location";
@@ -289,21 +305,28 @@ var directionsManager;
         	var wps = directionsManager.getAllWaypoints();
 
         	console.log(wp.waypoint);
+        	console.log("Exists: " + (thePoints[wp.waypoint._uniqueId] ? "yes" : "no"));
 
-        	for(var i in wps) {
+        	if(thePoints[wp.waypoint._uniqueId] !== undefined) {
+        		myUpdate = true;
+        		waypointsPath.child(thePoints[wp.waypoint._uniqueId]).set(waypoint);
+        	} else {
+	        	for(var i in wps) {
 
-        		console.log(wps[i]);
+	        		console.log(wps[i]);
 
-        		if(wp.waypoint == wps[i]) {
-        			console.log("Similar " + i);
+	        		if(wp.waypoint == wps[i]) {
+	        			console.log("Similar " + i);
 
-        			waypoint.idx = i;
+	        			waypoint.idx = i;
 
-		        	addWaypoint(waypoint);
-        		} else {
-        			console.log("Different");
-        		}
-        	}
+			        	addWaypoint(wp.waypoint._uniqueId, waypoint);
+	        		} else {
+	        			console.log("Different");
+	        		}
+	        	}
+	        }
+        	
 
     	});
     }
