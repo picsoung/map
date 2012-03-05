@@ -45,14 +45,6 @@
 			pinReceived(snapshot.name(), snapshot.val());
 		});
 
-		pinsPath.on('child_removed', function(snapshot) {
-			pinReceived(snapshot.name(), snapshot.val());
-		});
-
-		pinsPath.on('child_changed', function(snapshot) {
-			pinReceived(snapshot.name(), snapshot.val());
-		});
-
 		waypointsPath.on('value', function(snapshot) {
 
 			if(myUpdate) {
@@ -272,23 +264,6 @@
 
 		}                                                                                                                                                                                                                                                                                                                                                                                                                              
 
-	}
-
-	var removePin = function(id) {
-		pinsPath.child(id).remove();
-	}
-
-	var pinRemoved = function(id) {
-		console.log("Pin removed: " + id);
-	}
-
-	var movePin = function(id, lat, long) {
-		var pin = pinsPath.child(id);
-
-		pin.set({
-			lat: lat,
-			long: long
-		});
 	}
 
 	var apiKey = 1127; 
