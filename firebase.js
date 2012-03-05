@@ -1,5 +1,3 @@
-
-var directionsManager;
 (function() {
 
 	var baseUrl = 'http://angelhack.firebase.com/easymapr/';
@@ -8,9 +6,13 @@ var directionsManager;
 	var username;
 
 	var pinsPath, chatPath, waypointsPath, usersPath, videoPath;
-
-	var tokbox;
-	var tokboxApiKey = '12571782';
+	
+	var map = null;
+	var directionsManager;
+	var points;
+	var myUpdate = false;
+	var handlerId;
+	var thePoints = {};
 
 
 	var buildUrl = function(name) {
@@ -31,11 +33,6 @@ var directionsManager;
 		usersPath = new Firebase(usersUrl);
 		videoPath = new Firebase(videoUrl);
 	}
-
-
-	var map = null;
-	var points;
-	var myUpdate = false;
 
 	var bindListeners = function() {
 
@@ -59,9 +56,6 @@ var directionsManager;
 		waypointsPath.on('value', function(snapshot) {
 
 			if(myUpdate) {
-
-				console.log("waypoints value false");
-
 				myUpdate = false;
 				return;
 			}
@@ -72,7 +66,6 @@ var directionsManager;
 			thePoints = {};
 
 			snapshot.forEach(function(child) {
-				console.log(child.val());
 				points.push(child.val());
 				names.push(child.name());
 			});
@@ -100,10 +93,6 @@ var directionsManager;
 	      $('#users').text("User(s) online: " + users.join(", ") + ".");
 	    });
 	}
-
-	var handlerId;
-
-	var thePoints = {};
 
 	var showPoints = function(points, names) {
 
@@ -144,8 +133,6 @@ var directionsManager;
         	waypointHandler(x);
         }
 
-
-
 	    handlerId = Microsoft.Maps.Events.addHandler(directionsManager, 'waypointAdded', waypointHandler);
 
         // Calculate directions, which displays a route on the map
@@ -171,12 +158,7 @@ var directionsManager;
         	waypoint.idx = loc.longitude;
         	waypoint.endpoint = !wp.waypoint.isViapoint();
 
-        	console.log(wp.waypoint);
-
         	var wps = directionsManager.getAllWaypoints();
-
-        	console.log("Changed");
-
         	
         	for(var i in wps) {
         		if(wp.waypoint == wps[i]) {
@@ -218,30 +200,11 @@ var directionsManager;
 		$("#messageInput").val("");
 		$("#messageInput").focus();
 	}
-
-	var boot = function() {
-
-		connect();
-
-		bindListeners();
-
-		username = prompt("Username");
-		// username = Math.round(Math.random() * 1000)	;
-		var user = usersPath.child(username);
-		user.set(true);
-		user.removeOnDisconnect();
-
-		bindUi();
-
-	}
-
-	
 	
 	var searchCity = function (city_name, description){
 
 		var GEOCODE_URL = 'http://dev.virtualearth.net/REST/v1/Locations/{0}?output=json&jsonp=?&key={1}';
 		var url = GEOCODE_URL.replace('{0}', city_name).replace('{1}', bingApiKey);
-
 
 		var b = function (result, status) {
 			if ( status === 'OK' ) {
@@ -328,11 +291,6 @@ var directionsManager;
 		});
 	}
 
-	var pinMoved = function(id, lat, long) {
-		console.log("Moved");
-		console.log(arguments);
-	}
-
 	var apiKey = 1127; 
 	var sessionId = '153975e9d3ecce1d11baddd2c9d8d3c9d147df18';
 	var token = 'devtoken'; 
@@ -342,8 +300,6 @@ var directionsManager;
 	var subscribers = {};
 
 	var connectVideo = function() {
-
-
 
 		TB.addEventListener('exception', exceptionHandler);
 
@@ -379,15 +335,7 @@ var directionsManager;
 	// Called when user wants to start publishing to the session
 	var startPublishing = function() {
 		if (!publisher) {
-			/*
-			var parentDiv = document.getElementById("myCamera");
-			var publisherDiv = document.createElement('div'); // Create a div for the publisher to replace
-			publisherDiv.setAttribute('id', 'opentok_publisher');
-			parentDiv.appendChild(publisherDiv);
-			*/
-			publisher = session.publish("myVideo"); // Pass the replacement div id to the publish method
-			show('unpublishLink');
-			hide('publishLink');
+			publisher = session.publish("myVideo"); 
 		}
 	}
 
@@ -401,47 +349,29 @@ var directionsManager;
 		hide('unpublishLink');
 	}
 
-	//--------------------------------------
-	//  OPENTOK EVENT HANDLERS
-	//--------------------------------------
-
 	var exceptionHandler = function() {
 		console.log(arguments);
 	}
 
 	var sessionConnectedHandler = function(event) {
-		// Subscribe to all streams currently in the Session
 		for (var i = 0; i < event.streams.length; i++) {
 			addStream(event.streams[i]);
 		}
-		show('disconnectLink');
-		show('publishLink');
-		hide('connectLink');
 
 		startPublishing();
 	}
 
 	var streamCreatedHandler = function(event) {
-		// Subscribe to the newly created streams
 		for (var i = 0; i < event.streams.length; i++) {
 			addStream(event.streams[i]);
 		}
 	}
 
 	var streamDestroyedHandler = function(event) {
-		// This signals that a stream was destroyed. Any Subscribers will automatically be removed.
-		// This default behaviour can be prevented using event.preventDefault()
 	}
 
 	var sessionDisconnectedHandler = function(event) {
-		// This signals that the user was disconnected from the Session. Any subscribers and publishers
-		// will automatically be removed. This default behaviour can be prevented using event.preventDefault()
 		publisher = null;
-
-		show('connectLink');
-		hide('disconnectLink');
-		hide('publishLink');
-		hide('unpublishLink');
 	}
 
 	var connectionDestroyedHandler = function(event) {
@@ -452,18 +382,9 @@ var directionsManager;
 		// This signals new connections have been created.
 	}
 
-	/*
-	If you un-comment the call to TB.addEventListener("exception", exceptionHandler) above, OpenTok calls the
-	exceptionHandler() method when exception events occur. You can modify this method to further process exception events.
-	If you un-comment the call to TB.setLogLevel(), above, OpenTok automatically displays exception event messages.
-	*/
 	function exceptionHandler(event) {
 		console.log("Exception: " + event.code + "::" + event.message);
 	}
-
-	//--------------------------------------
-	//  HELPER METHODS
-	//--------------------------------------
 
 	function addStream(stream) {
 		// Check if this is the stream that I am publishing, and if so do not publish.
@@ -477,21 +398,6 @@ var directionsManager;
 		$("#theirVideos").append(div);
 
 		subscribers[stream.streamId] = session.subscribe(stream, id);
-	}
-
-	function show(id) {
-		console.log("Show: " + id);
-	}
-
-	function hide(id) {
-		console.log("Hide: " + id);
-	}
-
-
-	var consoler = function(text) {
-		return function() {
-			console.log(text);
-		}
 	}
 
 	var createMap = function() {
@@ -525,8 +431,8 @@ var directionsManager;
 
 		bindListeners();
 
-		// username = prompt("Username");
-		username = Math.round(Math.random() * 1000)	;
+		username = prompt("Username");
+		//username = Math.round(Math.random() * 1000)	;
 		var user = usersPath.child(username);
 		user.set(true);
 		user.removeOnDisconnect();
