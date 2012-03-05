@@ -1,9 +1,9 @@
 body {
     padding-top: 60px;
     padding-bottom: 40px;
+    background-color: #b6b6b6;
 }
 
-#map {
-	height: 400px;
-	background: #ffffff;
-}
+#addPinForm input {
+	width: 135px;
+} 

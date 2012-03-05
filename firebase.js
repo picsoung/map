@@ -59,26 +59,25 @@ var directionsManager;
 		waypointsPath.on('value', function(snapshot) {
 
 			if(myUpdate) {
+
+				console.log("waypoints value false");
+
 				myUpdate = false;
 				return;
 			}
 
-			if(handlerId) {
-				Microsoft.Maps.Events.removeHandler(handlerId);
-			}
-			
-			directionsManager.resetDirections();
+			points = new Array();
+			names = new Array();
 
 			thePoints = {};
 
-			snapshot.forEach(function(child){
-				addMoveWaypoint(child.name(), child.val());
+			snapshot.forEach(function(child) {
+				console.log(child.val());
+				points.push(child.val());
+				names.push(child.name());
 			});
 
-	        directionsManager.calculateDirections();
-
-		    handlerId = Microsoft.Maps.Events.addHandler(directionsManager, 'waypointAdded', waypointHandler);
-	
+			showPoints(points, names);
 		});
 
 		chatPath.on('child_added', function(childSnapshot) {
@@ -98,60 +97,15 @@ var directionsManager;
 	      }
 	      users.sort();
 
-	      $('#users').empty()
-	      for (var i = 0; i < users.length; i++) {
-	        $('#users').append(users[i] + ' is currently ' + presenceData[users[i]] + '<br />');
-	      }
+	      $('#users').text("User(s) online: " + users.join(", ") + ".");
 	    });
 	}
 
 	var handlerId;
 
 	var thePoints = {};
-	var addMoveWaypoint = function(id, data) {
 
-		var loc = getConfig(data);
-
-		if(thePoints[id]) {
-			var point = thePoints[id];
-			point.setOptions({
-				location: loc
-			});
-		} else {
-        	var p = data;
-
-        	var config = getConfig(p);
-
-        	// if(i != 0 && i != points.length - 1) {
-        	// 	config.isViapoint = true;
-        	// }
-
-        	var startWaypoint = new Microsoft.Maps.Directions.Waypoint(config);
-
-        	var idx = parseInt(p.idx);
-        	directionsManager.addWaypoint(startWaypoint, idx);
-
-        	thePoints[id] = startWaypoint;
-		}
-	}
-
-	var getConfig = function(p) {
-			var config = {};
-
-		if(p.type == "address") {
-        		config.address = p.name;
-        	} else if(p.type == "location") {
-        		var loc = new Microsoft.Maps.Location(p.lat, p.long);
-        		config.location = loc;
-        	} else {
-        		console.log("Waypoint error");
-        		console.log(p);
-        	}
-
-        	return config;
-	}
-
-	var showPoints = function(points) {
+	var showPoints = function(points, names) {
 
 		directionsManager.resetDirections();
 
@@ -174,14 +128,20 @@ var directionsManager;
         		console.log(p);
         	}
 
-        	// if(i != 0 && i != points.length - 1) {
-        	// 	config.isViapoint = true;
-        	// }
+        	config.isViapoint = !p.endpoint;
 
         	var startWaypoint = new Microsoft.Maps.Directions.Waypoint(config);
 
         	var idx = parseInt(p.idx);
         	directionsManager.addWaypoint(startWaypoint, idx);
+
+        	thePoints[startWaypoint._uniqueId] = names[i];
+
+        	var x = {
+        		waypoint: startWaypoint
+        	};
+
+        	waypointHandler(x);
         }
 
 
@@ -192,22 +152,61 @@ var directionsManager;
         directionsManager.calculateDirections();
 	}
 
+
+	var addWaypoint = function(id, data) {
+		myUpdate = true;
+		var i = waypointsPath.push(data);
+		thePoints[id] = i.name();
+	}
+
+	var waypointHandler = function(wp) {
+
+    	Microsoft.Maps.Events.addHandler(wp.waypoint, 'changed', function() {
+
+        	var loc = wp.waypoint.getLocation();
+        	var waypoint = {};
+        	waypoint.type = "location";
+        	waypoint.lat = loc.latitude;
+        	waypoint.long = loc.longitude;
+        	waypoint.idx = loc.longitude;
+        	waypoint.endpoint = !wp.waypoint.isViapoint();
+
+        	console.log(wp.waypoint);
+
+        	var wps = directionsManager.getAllWaypoints();
+
+        	console.log("Changed");
+
+        	
+        	for(var i in wps) {
+        		if(wp.waypoint == wps[i]) {
+        			waypoint.idx = i;
+        			if(thePoints[wp.waypoint._uniqueId] !== undefined) {
+		        		myUpdate = true;
+		        		waypointsPath.child(thePoints[wp.waypoint._uniqueId]).set(waypoint);
+		        	} else {
+		        		addWaypoint(wp.waypoint._uniqueId, waypoint);
+		        	}
+		        	break;
+        		}
+	        }
+        	
+
+    	});
+    }
+
 	var bindUi = function() {
 
 		$("#messageSend").click(function() {
 			sendMessage();
+			return false;
 		});
 
-		$("#addPin").click(function() {
-			var city = searchCity($("#pinLookup").val());
+		$("#addPinForm").submit(function() {
+			var city = searchCity($("#pinLookup").val(), $("#pinDescription").val());
 			$("#pinLookup").val("");
-		});
-
-		$("#deletePin").click(function() {
-			var id = $("#pinLookup").val();
-
-			removePin(id);
-
+			$("#pinDescription").val("");
+			return false;
 		});
 	}
 
@@ -226,8 +225,8 @@ var directionsManager;
 
 		bindListeners();
 
-		// username = prompt("Username");
-		username = Math.round(Math.random() * 1000)	;
+		username = prompt("Username");
+		// username = Math.round(Math.random() * 1000)	;
 		var user = usersPath.child(username);
 		user.set(true);
 		user.removeOnDisconnect();
@@ -238,7 +237,7 @@ var directionsManager;
 
 	
 	
-	var searchCity = function (city_name){
+	var searchCity = function (city_name, description){
 
 		var GEOCODE_URL = 'http://dev.virtualearth.net/REST/v1/Locations/{0}?output=json&jsonp=?&key={1}';
 		var url = GEOCODE_URL.replace('{0}', city_name).replace('{1}', bingApiKey);
@@ -254,8 +253,8 @@ var directionsManager;
 				city.country = r[0]['resources'][0]['address']['countryRegion'];
 				
 				if (city != false){
-					addPin(Math.random(), city.name, city.lat, city.long);
-				}else{
+					addPin(username, city.name, description, city.lat, city.long);
+				} else {
 					alert("could not find your pin");
 				}
 			} else {
@@ -275,24 +274,39 @@ var directionsManager;
 	    });
 	}
 
-	var addPin = function(user, name, lat, long) {
+	var addPin = function(user, name, description, lat, long) {
 		pinsPath.push({
 			user: username,
 			name: name,
+			description: description,
 			lat: lat,
 			long: long
 		});
 	}
 
 	var pinReceived = function(id, data) {
-		console.log(id);
-		console.log(data);
 		if(data.lat != 'null' && data.long != 'null') {
 
-			var options = {id: id, 'bounds': true };
+			var options = {
+				id: id,
+				'bounds': true
+			};
 
-			var pin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location(data.lat, data.long), options);
-			map.entities.push(pin);
+			var loc = new Microsoft.Maps.Location(data.lat, data.long);
+			var pin = new Microsoft.Maps.Pushpin(loc, options);   
+			map.entities.push(pin);   
+
+			Microsoft.Maps.Events.addHandler(pin, 'click', function() {
+
+				var defaultInfobox = new Microsoft.Maps.Infobox(loc, {
+					title: data.name + " added by " + data.user,
+					description: data.description + "<br/>" + 
+					'<a href="http://www.hotels.com/search.do?destination=' + data.name + '" target="_blank">Find hotels</a>'
+				}); 
+				map.entities.push(defaultInfobox);
+				return false;
+			}); 
+
 		}                                                                                                                                                                                                                                                                                                                                                                                                                              
 
 	}
@@ -318,42 +332,6 @@ var directionsManager;
 		console.log("Moved");
 		console.log(arguments);
 	}
-
-	var addWaypoint = function(data) {
-		myUpdate = true;
-		waypointsPath.push(data);
-	}
-
-	var waypointHandler = function(wp) {
-
-    	Microsoft.Maps.Events.addHandler(wp.waypoint, 'changed', function() {
-        	var loc = wp.waypoint.getLocation();
-        	var waypoint = {};
-        	waypoint.type = "location";
-        	waypoint.lat = loc.latitude;
-        	waypoint.long = loc.longitude;
-
-        	var wps = directionsManager.getAllWaypoints();
-
-        	console.log(wp.waypoint);
-
-        	for(var i in wps) {
-
-        		console.log(wps[i]);
-
-        		if(wp.waypoint == wps[i]) {
-        			console.log("Similar " + i);
-
-        			waypoint.idx = i;
-
-		        	addWaypoint(waypoint);
-        		} else {
-        			console.log("Different");
-        		}
-        	}
-
-    	});
-    }
 
 	var apiKey = 1127; 
 	var sessionId = '153975e9d3ecce1d11baddd2c9d8d3c9d147df18';
@@ -538,6 +516,8 @@ var directionsManager;
      }
 
 	var boot = function() {
+
+		//Firebase.enableLogging(true);
 
 		createMap();
 

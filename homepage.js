@@ -17,6 +17,8 @@
 
 			startMap(map);
 		});
+
+		return false;
 	}
 
 	var startMap = function(map) {
@@ -28,12 +30,14 @@
 		waypointsPath.push().set({
 			type: "address",
 			name: from,
-			idx: 0
+			idx: 0,
+			endpoint: true
 		});
 		waypointsPath.push().set({
 			type: "address",
 			name: to,
-			idx: 1
+			idx: 1,
+			endpoint: true
 		});
 
 		console.log(map.name());
@@ -48,7 +52,7 @@
 
 		connect();
 
-		
+		$("form").submit(startTokbox);
 		$("#start").click(startTokbox);
 
 	}
